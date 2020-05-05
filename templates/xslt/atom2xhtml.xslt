@@ -14,23 +14,30 @@
        <html>
                 <head>
                     <title><xsl:value-of select="atom:title" /></title>
+                    <link rel="alternate" type="application/atom+xml" href="{atom:link[@rel='self']/@href}" />
                     <link rel="Stylesheet" href="style.css"/>
                 </head>
                 <body id="feed">
-                  <h2>Buyers</h2>
-                  Total sales: <xsl:value-of select="count(atom:sale)"/>
-                  <xsl:apply-templates select="atom:sale">
-                  </xsl:apply-templates>
+                    <xsl:apply-templates select="atom:entry[generate-id(.) = generate-id(key('entry-by-category', atom:category/@term)[1])]">
+                        <!-- atom:entry[count(. | key('entry-by-category', atom:category/@term)[1]) = 1] -->
+                        <xsl:sort select="atom:category/@term" />
+                    </xsl:apply-templates>
                 </body>
             </html>
     </xsl:template>
 
-    <xsl:template match="atom:sale">
-    <div class="buyers" style="border-bottom:1px solid black;border-top:1px solid black">
-          Name: <h2><xsl:value-of select="atom:name"/></h2><br/>
-          Age: <xsl:value-of select="atom:age"/><br/>
-          Sale: <xsl:value-of select="atom:medicament"/><br/>
-    </div>
-    </xsl:template>
+    <xsl:template match="atom:entry">
+        <h1><xsl:value-of select="atom:category/@term" /></h1>
+        <ul>
+            <xsl:for-each select="key('entry-by-category', atom:category/@term)">
+                <xsl:sort select="atom:updated" order="descending"/>
+                <li>
+                    <a  href="{{atom:link/@href}}">
+                        <span><xsl:value-of select="atom:title" /></span></a>
+                        <xsl:value-of select="concat(' ',atom:summary)" />
 
+                </li>
+            </xsl:for-each>
+        </ul>
+    </xsl:template>
 </xsl:stylesheet>
